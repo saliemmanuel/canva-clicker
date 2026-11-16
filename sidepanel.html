@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Canva Video Automator</title>
+<style>
+  :root {
+    --primary: #7d2ae8;
+    --primary-hover: #671ecc;
+    --primary-light: #f3ebff;
+    --accent: #00c4cc;
+    --danger: #e74c3c;
+    --danger-hover: #c0392b;
+    --success: #00c48c;
+    --bg: #f8f9fc;
+    --card-bg: #ffffff;
+    --text: #1a1b1d;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    font-size: 13px;
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+  .status-pill.running {
+    background: #ede7f6;
+    color: var(--primary);
+  }
+  .status-pill.done {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .card-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Action Buttons */
+  .buttons-row {
+    display: flex;
+    gap: 8px;
+  }
+  .btn {
+    flex: 1;
+    padding: 11px 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-start {
+    background: linear-gradient(135deg, var(--primary), #9a4ff7);
+    box-shadow: 0 4px 12px rgba(125, 42, 232, 0.25);
+  }
+  .btn-start:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--primary));
+  }
+  .btn-stop {
+    background: var(--danger);
+    flex: 0.45;
+  }
+  .btn-stop:hover { background: var(--danger-hover); }
+
+  /* Dashboard Metrics */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .metric-box {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+  }
+  .metric-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .metric-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+    margin-top: 2px;
+  }
+
+  /* Progress Bar */
+  .progress-bar-bg {
+    background: #e2e8f0;
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+    margin: 6px 0;
+  }
+  .progress-bar-fill {
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .progress-subtext {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  /* Form Fields */
+  .field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 0;
+    gap: 8px;
+  }
+  .field label {
+    font-weight: 600;
+    font-size: 12px;
+    color: #334155;
+  }
+  input[type=text], input[type=number] {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type=text]:focus, input[type=number]:focus {
+    border-color: var(--primary);
+  }
+  input[type=text] { width: 140px; }
+  input[type=number] { width: 70px; text-align: center; }
+
+  /* Checkboxes */
+  .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+  }
+  .checkbox-label input[type=checkbox] {
+    accent-color: var(--primary);
+    cursor: pointer;
+    width: 15px;
+    height: 15px;
+  }
+
+  /* Mini Button */
+  .btn-mini {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: none;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-mini:hover { background: #e0d0f7; }
+
+  /* Terminal / Activity Log */
+  .log-container {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    border-radius: 8px;
+    padding: 10px;
+    height: 130px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .log-line {
+    word-break: break-all;
+    line-height: 1.4;
+  }
+  .log-time { color: #64748b; margin-right: 6px; }
+  .log-success { color: #34d399; font-weight: 600; }
+  .log-info { color: #93c5fd; }
+  .log-highlight { color: #c084fc; }
+
+  /* Footer help */
+  .footer-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: auto;
+    padding-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- En-tête -->
+  <div class="header">
+    <div class="header-title">
+      <span>🎬 Canva Automator</span>
+    </div>
+    <span id="statusPill" class="status-pill">Prêt</span>
+  </div>
+
+  <!-- Boutons d'action -->
+  <div class="buttons-row">
+    <button id="start" class="btn btn-start">▶ Démarrer (50 min)</button>
+    <button id="stop" class="btn btn-stop">■ Stop</button>
+  </div>
+
+  <!-- Tableau de bord de progression multi-lots -->
+  <div class="card">
+    <div class="card-title">Progression Globale</div>
+    <div class="metrics-grid">
+      <div class="metric-box">
+        <div class="metric-label">Durée cumulée</div>
+        <div class="metric-value" id="metricDuration">0:00 / 50:00</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Progression</div>
+        <div class="metric-value" id="metricPercent">0%</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Série en cours</div>
+        <div class="metric-value" id="metricBatch" style="color:var(--accent);">Lot #1 (0/48)</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Vidéos ajoutées</div>
+        <div class="metric-value" id="metricClips">0 clips</div>
+      </div>
+    </div>
+
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+    <div class="progress-subtext">
+      <span id="currentStep">Prêt. Cliquez sur Démarrer.</span>
+      <span id="percentText">0%</span>
+    </div>
+  </div>
+
+  <!-- Journal d'activité en temps réel -->
+  <div class="card">
+    <div class="card-title">
+      <span>Journal d'activité</span>
+      <button type="button" id="clearLog" class="btn-mini">Effacer</button>
+    </div>
+    <div class="log-container" id="logBox">
+      <div class="log-line"><span class="log-time">--:--:--</span>Panneau latéral actif. Limite Canva à 48 vidéos / série avec téléchargement et vidage automatique gérés.</div>
+    </div>
+  </div>
+
+  <!-- Paramètres & Options -->
+  <div class="card">
+    <div class="card-title">Configuration</div>
+    <div class="field">
+      <label for="category">Catégorie / Mots-clés</label>
+      <input type="text" id="category" value="nature">
+    </div>
+    <div class="field">
+      <label for="targetMinutes">Durée cible globale (min)</label>
+      <input type="number" id="targetMinutes" min="1" max="600" value="50">
+    </div>
+    <div class="field">
+      <label for="maxVideosPerBatch">Max vidéos par lot (limite Canva: 50)</label>
+      <input type="number" id="maxVideosPerBatch" min="5" max="48" value="48">
+    </div>
+    <div class="field">
+      <label for="delay">Délai par clip (ms)</label>
+      <input type="number" id="delay" min="300" step="100" value="1200">
+    </div>
+
+    <div class="checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="addNewPage" checked>
+        Ajouter une page (+) par clip
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="useMagicRecommendations" checked>
+        Explorer la section « Magic recommendations » (See all)
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="autoDownload" checked>
+        Télécharger automatiquement chaque lot (MP4)
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="clearTimelineBetweenBatches" checked>
+        Vider la timeline entre les lots pour continuer
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="removeAudio" checked>
+        Supprimer les pistes audio à chaque lot
+      </label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="removeAnimations" checked>
+        Supprimer les animations à chaque lot
+      </label>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <label class="checkbox-label">
+          <input type="checkbox" id="playSound" checked>
+          Émettre un son à la fin des 50 min
+        </label>
+        <button type="button" id="testSound" class="btn-mini">🔊 Tester</button>
+      </div>
+      <label class="checkbox-label">
+        <input type="checkbox" id="skipPro">
+        Ignorer les vidéos Canva Pro
+      </label>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Ce panneau reste actif pendant les téléchargements et enchaîne les séries automatiquement.
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
